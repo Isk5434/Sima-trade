@@ -1,0 +1,101 @@
+# ============================================
+# AI Trading PoC - Configuration
+# ============================================
+
+data:
+  # データ取得設定
+  symbol: "USDJPY"
+  interval: "1min"  # 1分足
+  lookback_days: 30  # 過去30日間
+  
+  # ローカルデータの位置
+  raw_data_path: "./data/raw"
+  features_path: "./data/features"
+  
+features:
+  # 特徴量生成設定
+  lookback_minutes: 60  # 直近60分を使用
+  
+  # リターン系特徴量
+  returns:
+    - 1   # 1分リターン
+    - 5   # 5分リターン
+    - 15  # 15分リターン
+    - 30  # 30分リターン
+  
+  # 移動平均乖離率 (%)
+  sma_deviation:
+    - 5   # 5分SMA
+    - 15  # 15分SMA
+    - 60  # 60分SMA
+  
+  # ボラティリティ (ATR)
+  atr_periods:
+    - 15  # 15分ボラティリティ
+    - 30  # 30分ボラティリティ
+  
+  # RSI
+  rsi_period: 14
+  
+  # 時間情報
+  include_hour: true
+  include_dow: true  # 曜日
+
+model:
+  # モデル設定
+  type: "lightgbm"
+  
+  # LightGBMパラメータ
+  lgb_params:
+    objective: "multiclass"
+    num_class: 3  # LONG, SHORT, NO_TRADE
+    num_leaves: 31
+    max_depth: 5
+    learning_rate: 0.05
+    min_data_in_leaf: 20
+    feature_fraction: 0.8
+    bagging_fraction: 0.8
+    bagging_freq: 5
+    verbose: -1
+  
+  # 訓練設定
+  train_days: 7      # 7日分で訓練
+  test_days: 1       # 1日分でテスト
+  validation_split: 0.2
+  
+  # エポック
+  num_boosting_rounds: 200
+  
+  # モデル保存
+  model_path: "./models"
+  model_filename: "usdjpy_model.pkl"
+
+prediction:
+  # 推論設定
+  confidence_threshold: 0.5  # 確度閾値
+  
+  # クラスマッピング
+  classes:
+    0: "SHORT"
+    1: "LONG"
+    2: "NO_TRADE"
+
+api:
+  # Alpha Vantage API設定
+  base_url: "https://www.alphavantage.co/query"
+  timeout: 30  # 秒
+  
+  # レート制限
+  requests_per_minute: 5  # 無料APIは5/分
+  
+  # リトライ設定
+  max_retries: 3
+  retry_delay: 5  # 秒
+
+logging:
+  # ロギング設定
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  output:
+    - "console"
+    - "file"  # ./logs/trading.log
