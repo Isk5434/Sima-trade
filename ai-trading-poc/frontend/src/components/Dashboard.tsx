@@ -13,7 +13,6 @@ export const Dashboard: React.FC = () => {
     health,
     loading,
     error,
-    fetchSignal,
     refreshSignal,
     trainModel,
   } = useSignal();
